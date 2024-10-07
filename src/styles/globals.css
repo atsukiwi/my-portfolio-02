@@ -25,3 +25,20 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Custom styles for blog content */
+.prose img {
+  @apply rounded-lg shadow-md;
+}
+
+.prose code {
+  @apply bg-gray-800 rounded px-1;
+}
+
+.prose pre {
+  @apply bg-gray-800 p-4 rounded-lg;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-blue-500 pl-4 italic;
+}

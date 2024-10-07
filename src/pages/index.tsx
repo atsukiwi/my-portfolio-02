@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { GetStaticProps, NextPage } from 'next';
 import Head from "next/head";
 import Link from "next/link";
 import {
@@ -11,12 +11,39 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import Prism from "prismjs";
-import "prismjs/themes/prism-tomorrow.css";
-import "prismjs/components/prism-javascript";
-import "prismjs/components/prism-jsx";
+import { useEffect, useRef, useState } from "react";
+import { client } from '../lib/microcms';
+import { BlogPost, Category } from '../types';
 
-export default function Home() {
+interface HomeProps {
+  blogPosts: BlogPost[];
+  categories: Category[];
+}
+
+export const getStaticProps: GetStaticProps<HomeProps> = async () => {
+  try {
+    console.log('Fetching blog data...');
+    const blogData = await client.get({ endpoint: 'blogs' });
+    console.log('Blog data:', blogData);
+
+    console.log('Fetching category data...');
+    const categoryData = await client.get({ endpoint: 'categories' });
+    console.log('Category data:', categoryData);
+
+    return {
+      props: {
+        blogPosts: blogData.contents,
+        categories: categoryData.contents,
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    return { props: { blogPosts: [], categories: [] } };
+  }
+};
+
+const Home: NextPage<HomeProps> = ({ blogPosts, categories }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
@@ -33,9 +60,6 @@ export default function Home() {
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    // Initialize Prism.js
-    Prism.highlightAll();
-
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -44,20 +68,6 @@ export default function Home() {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
-  const blogPosts = [
-    { id: 1, title: "Getting Started with Next.js", date: "2023-05-15" },
-    { id: 2, title: "React Hooks Deep Dive", date: "2023-05-10" },
-    { id: 3, title: "TypeScript Best Practices", date: "2023-05-05" },
-  ];
-
-  const categories = [
-    "React",
-    "Next.js",
-    "TypeScript",
-    "JavaScript",
-    "Web Development",
-  ];
 
   return (
     <div className="flex min-h-screen justify-center bg-[#0e1117] text-white">
@@ -101,15 +111,9 @@ export default function Home() {
         *::-webkit-scrollbar-thumb:hover {
           background-color: #5a5f6e;
         }
-
-        /* Override Prism styles to fit our dark theme */
-        pre[class*="language-"],
-        code[class*="language-"] {
-          background: #1e1e1e !important;
-        }
       `}</style>
+
       <div className="flex w-full max-w-6xl">
-        {/* Mobile Sidebar Toggle Button */}
         <button
           className="fixed top-4 left-4 z-50 md:hidden"
           onClick={toggleSidebar}
@@ -122,7 +126,6 @@ export default function Home() {
           )}
         </button>
 
-        {/* Sidebar */}
         <aside
           ref={sidebarRef}
           className={`fixed left-0 top-0 z-40 h-full w-64 overflow-y-auto border-r border-gray-800 bg-[#0e1117] p-8 transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
@@ -142,17 +145,11 @@ export default function Home() {
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
           </div>
           <nav className="space-y-3">
-            <Link
-              href="/"
-              className="flex items-center rounded-md px-3 py-2 text-base text-gray-300 hover:bg-gray-800"
-            >
+            <Link href="/" className="flex items-center rounded-md px-3 py-2 text-base text-gray-300 hover:bg-gray-800">
               <FileText className="mr-3 h-5 w-5" />
               Blog Posts
             </Link>
-            <Link
-              href="/about"
-              className="flex items-center rounded-md px-3 py-2 text-base text-gray-300 hover:bg-gray-800"
-            >
+            <Link href="/about" className="flex items-center rounded-md px-3 py-2 text-base text-gray-300 hover:bg-gray-800">
               <BookOpen className="mr-3 h-5 w-5" />
               About Me
             </Link>
@@ -160,13 +157,10 @@ export default function Home() {
           <div className="mt-10">
             <h2 className="mb-3 text-xl font-semibold">Categories</h2>
             <ul className="space-y-2">
-              {categories.map((category, index) => (
-                <li key={index}>
-                  <Link
-                    href={`/category/${category.toLowerCase()}`}
-                    className="block rounded-md px-3 py-2 text-base text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
-                  >
-                    {category}
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <Link href={`/category/${category.id}`} className="block rounded-md px-3 py-2 text-base text-gray-400 transition-colors hover:bg-gray-800 hover:text-white">
+                    {category.name}
                   </Link>
                 </li>
               ))}
@@ -195,7 +189,6 @@ export default function Home() {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main
           ref={mainContentRef}
           className="flex-1 overflow-y-auto px-4 py-8 md:px-8"
@@ -225,42 +218,16 @@ export default function Home() {
                     <h4 className="mb-2 text-xl font-semibold md:text-2xl">
                       {post.title}
                     </h4>
-                    <p className="text-base text-gray-400">{post.date}</p>
+                    <p className="text-base text-gray-400">{post.publishedAt}</p>
                   </article>
                 </Link>
               ))}
             </div>
           </div>
-
-          <div className="mt-12">
-            <h3 className="mb-6 text-2xl font-bold md:text-3xl">
-              Featured Code Snippet
-            </h3>
-            <pre className="overflow-x-auto rounded-lg bg-[#1e1e1e] p-4 text-sm md:p-6">
-              <code className="language-javascript">
-                {`// Example of a React custom hook
-import { useState, useEffect } from 'react';
-
-function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}`}
-              </code>
-            </pre>
-          </div>
         </main>
       </div>
     </div>
   );
-}
+};
+
+export default Home;
