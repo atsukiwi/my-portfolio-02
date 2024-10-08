@@ -35,7 +35,7 @@ export const getStaticProps: GetStaticProps<CategoryPageProps> = async ({ params
             categories: categoriesData.contents,
             currentCategory,
         },
-        revalidate: 60,
+        revalidate: 60, // 60秒ごとに再生成を試みる
     };
 };
 
