@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import {
     Search,
     FileText,
@@ -21,6 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children, categories }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const sidebarRef = useRef<HTMLDivElement>(null);
     const mainContentRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const handleResize = () => {
@@ -61,7 +63,7 @@ const Layout: React.FC<LayoutProps> = ({ children, categories }) => {
                 <aside
                     ref={sidebarRef}
                     className={`fixed left-0 top-0 z-40 h-full w-64 overflow-y-auto border-r border-gray-800 bg-background p-8 transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-                        } scrollbar-custom`} // scrollbar-custom クラスを追加
+                        } scrollbar-custom`}
                 >
                     <div className="mb-8">
                         <h1 className="text-4xl font-bold">Tech Blog</h1>
@@ -90,7 +92,11 @@ const Layout: React.FC<LayoutProps> = ({ children, categories }) => {
                         <ul className="space-y-2">
                             {categories.map((category) => (
                                 <li key={category.id}>
-                                    <Link href={`/category/${category.id}`} className="block rounded-md px-3 py-2 text-base text-gray-400 transition-colors hover:bg-gray-800 hover:text-foreground">
+                                    <Link
+                                        href={`/category/${category.id}`}
+                                        className={`block rounded-md px-3 py-2 text-base transition-colors hover:bg-gray-800 hover:text-foreground ${router.asPath === `/category/${category.id}` ? 'bg-gray-800 text-foreground' : 'text-gray-400'
+                                            }`}
+                                    >
                                         {category.name}
                                     </Link>
                                 </li>
@@ -122,7 +128,7 @@ const Layout: React.FC<LayoutProps> = ({ children, categories }) => {
 
                 <main
                     ref={mainContentRef}
-                    className="flex-1 overflow-y-auto px-4 py-8 md:px-8 scrollbar-custom" // scrollbar-custom クラスを追加
+                    className="flex-1 overflow-y-auto px-4 py-8 md:px-8 scrollbar-custom"
                 >
                     {children}
                 </main>
