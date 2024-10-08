@@ -1,10 +1,12 @@
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Head from 'next/head';
 import { client } from '../../lib/microcms';
-import { BlogPost } from '../../types';
+import { BlogPost, Category } from '../../types';
+import Layout from '../../components/Layout';
 
 interface BlogPostPageProps {
   post: BlogPost;
+  categories: Category[];
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -17,17 +19,19 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps<BlogPostPageProps> = async ({ params }) => {
   const postId = params?.id as string;
   const post = await client.get({ endpoint: 'blogs', contentId: postId });
+  const categoryData = await client.get({ endpoint: 'categories' });
 
   return {
     props: {
       post,
+      categories: categoryData.contents,
     },
   };
 };
 
-const BlogPostPage: NextPage<BlogPostPageProps> = ({ post }) => {
+const BlogPostPage: NextPage<BlogPostPageProps> = ({ post, categories }) => {
   return (
-    <div className="container mx-auto px-4 py-8 bg-[#0e1117] text-white">
+    <Layout categories={categories}>
       <Head>
         <title>{post.title} | Tech Blog</title>
         <meta name="description" content={`${post.title} - Tech Blog post`} />
@@ -36,13 +40,13 @@ const BlogPostPage: NextPage<BlogPostPageProps> = ({ post }) => {
       <p className="mb-8 text-gray-400">{post.publishedAt}</p>
       <div
         dangerouslySetInnerHTML={{ __html: post.content }}
-        className="prose prose-invert prose-lg max-w-none 
-                   prose-headings:text-white prose-p:text-gray-300 
+        className="prose prose-lg max-w-none 
+                   prose-headings:text-foreground prose-p:text-gray-300 
                    prose-a:text-blue-400 hover:prose-a:text-blue-300
-                   prose-strong:text-white prose-code:text-white
+                   prose-strong:text-foreground prose-code:text-foreground
                    prose-ol:text-gray-300 prose-ul:text-gray-300"
       />
-    </div>
+    </Layout>
   );
 };
 
