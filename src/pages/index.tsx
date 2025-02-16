@@ -20,11 +20,14 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
         blogPosts: blogData.contents,
         categories: categoryData.contents,
       },
-      revalidate: 60,
+      revalidate: 60, // 60秒ごとに再生成を試みる
     };
   } catch (error) {
     console.error('Error in getStaticProps:', error);
-    return { props: { blogPosts: [], categories: [] } };
+    return {
+      props: { blogPosts: [], categories: [] },
+      revalidate: 60,
+    };
   }
 };
 

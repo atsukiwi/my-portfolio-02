@@ -4,50 +4,48 @@ import { client } from '../../lib/microcms';
 import { BlogPost, Category } from '../../types';
 import Layout from '../../components/Layout';
 
-interface BlogPostPageProps {
+interface PostPageProps {
   post: BlogPost;
   categories: Category[];
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const data = await client.get({ endpoint: 'blogs' });
+  const paths = data.contents.map((post: BlogPost) => ({
+    params: { id: post.id },
+  }));
 
-  const paths = data.contents.map((content: BlogPost) => `/post/${content.id}`);
-  return { paths, fallback: false };
+  return { paths, fallback: 'blocking' };
 };
 
-export const getStaticProps: GetStaticProps<BlogPostPageProps> = async ({ params }) => {
+export const getStaticProps: GetStaticProps<PostPageProps> = async ({ params }) => {
   const postId = params?.id as string;
-  const post = await client.get({ endpoint: 'blogs', contentId: postId });
-  const categoryData = await client.get({ endpoint: 'categories' });
+  const postData = await client.get({ endpoint: 'blogs', contentId: postId });
+  const categoriesData = await client.get({ endpoint: 'categories' });
 
   return {
     props: {
-      post,
-      categories: categoryData.contents,
+      post: postData,
+      categories: categoriesData.contents,
     },
+    revalidate: 60, // 60秒ごとに再生成を試みる
   };
 };
 
-const BlogPostPage: NextPage<BlogPostPageProps> = ({ post, categories }) => {
+const PostPage: NextPage<PostPageProps> = ({ post, categories }) => {
   return (
     <Layout categories={categories}>
       <Head>
-        <title>{post.title} | Tech Blog</title>
+        <title>{post.title} - Tech Blog</title>
         <meta name="description" content={`${post.title} - Tech Blog post`} />
       </Head>
-      <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
-      <p className="mb-8 text-gray-400">{post.publishedAt}</p>
-      <div
-        dangerouslySetInnerHTML={{ __html: post.content }}
-        className="prose prose-lg max-w-none 
-                   prose-headings:text-foreground prose-p:text-gray-300 
-                   prose-a:text-blue-400 hover:prose-a:text-blue-300
-                   prose-strong:text-foreground prose-code:text-foreground
-                   prose-ol:text-gray-300 prose-ul:text-gray-300"
-      />
+
+      <article className="prose prose-invert max-w-none">
+        <h1>{post.title}</h1>
+        <div dangerouslySetInnerHTML={{ __html: post.content }} />
+      </article>
     </Layout>
   );
 };
 
-export default BlogPostPage;
+export default PostPage;
