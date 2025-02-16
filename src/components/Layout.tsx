@@ -7,7 +7,6 @@ import {
     BookOpen,
     Github,
     Twitter,
-    Rss,
     Menu,
     X,
 } from "lucide-react";
