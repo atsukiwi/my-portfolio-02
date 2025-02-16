@@ -7,7 +7,6 @@ import {
     BookOpen,
     Github,
     Twitter,
-    Rss,
     Menu,
     X,
 } from "lucide-react";
@@ -78,13 +77,13 @@ const Layout: React.FC<LayoutProps> = ({ children, categories }) => {
                         <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
                     </div>
                     <nav className="space-y-3">
-                        <Link href="/" className="flex items-center rounded-md px-3 py-2 text-base text-gray-300 hover:bg-gray-800">
-                            <FileText className="mr-3 h-5 w-5" />
-                            Blog Posts
-                        </Link>
                         <Link href="/about" className="flex items-center rounded-md px-3 py-2 text-base text-gray-300 hover:bg-gray-800">
                             <BookOpen className="mr-3 h-5 w-5" />
                             About Me
+                        </Link>
+                        <Link href="/" className="flex items-center rounded-md px-3 py-2 text-base text-gray-300 hover:bg-gray-800">
+                            <FileText className="mr-3 h-5 w-5" />
+                            Blog Posts
                         </Link>
                     </nav>
                     <div className="mt-10">
@@ -119,9 +118,6 @@ const Layout: React.FC<LayoutProps> = ({ children, categories }) => {
                             className="text-gray-400 hover:text-foreground"
                         >
                             <Twitter className="h-6 w-6" />
-                        </a>
-                        <a href="/rss.xml" className="text-gray-400 hover:text-foreground">
-                            <Rss className="h-6 w-6" />
                         </a>
                     </div>
                 </aside>
